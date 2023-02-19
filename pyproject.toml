@@ -17,7 +17,8 @@ flake8 = "^6.0.0"
 responses = "^0.22.0"
 
 [tool.poetry.scripts]
-test = 'scripts:test'
+test = "scripts:test"
+download_calibre_src = "scripts:download_calibre_src"
 
 [build-system]
 requires = ["poetry-core"]
