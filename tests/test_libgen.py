@@ -2,7 +2,7 @@ import responses
 from responses import matchers
 from unittest import TestCase
 from unittest.mock import patch
-from requests_html import HTML
+from bs4 import BeautifulSoup
 import calibre_libgen_store.libgen as libgen
 
 
@@ -13,8 +13,8 @@ class TestLibGen(TestCase):
     @responses.activate
     def test_search_working_first_mirror(self):
         @patch("calibre_libgen_store.libgen.parse_result_row")
-        def parse_result_row(result):
-            return libgen.SearchResult(
+        def parse_result_row(result, base_url):
+            return libgen.LibGenBook(
                 authors="authors",
                 title="title",
                 publisher="publisher",
@@ -26,7 +26,7 @@ class TestLibGen(TestCase):
                 mirrors=["https://mirror.mirror"],
             )
 
-        params = {"req": "query", "res": 42, "view": "simple"}
+        params = {"req": "query", "res": 50, "view": "simple"}
         first_mirror_response = responses.get(
             f"{TestLibGen.MIRRORS[0]}/search.php",
             body="<html></html>",
@@ -38,7 +38,7 @@ class TestLibGen(TestCase):
             match=[matchers.query_param_matcher(params)],
         )
 
-        libgen.search("query", results=42)
+        libgen.search("query", max_results=42)
 
         assert first_mirror_response.call_count == 1
         assert second_mirror_response.call_count == 0
@@ -47,8 +47,8 @@ class TestLibGen(TestCase):
     @responses.activate
     def test_search_broken_first_mirror(self):
         @patch("calibre_libgen_store.libgen.parse_result_row")
-        def parse_result_row(result):
-            return libgen.SearchResult(
+        def parse_result_row(result, base_url):
+            return libgen.LibGenBook(
                 authors="authors",
                 title="title",
                 publisher="publisher",
@@ -60,7 +60,7 @@ class TestLibGen(TestCase):
                 mirrors=["https://mirror.mirror"],
             )
 
-        params = {"req": "query", "res": 42, "view": "simple"}
+        params = {"req": "query", "res": 50, "view": "simple"}
         first_mirror_response = responses.add(
             responses.GET,
             f"{TestLibGen.MIRRORS[0]}/search.php",
@@ -73,7 +73,7 @@ class TestLibGen(TestCase):
             match=[matchers.query_param_matcher(params)],
         )
 
-        libgen.search("query", results=42)
+        libgen.search("query", max_results=42)
 
         assert first_mirror_response.call_count == 1
         assert second_mirror_response.call_count == 1
@@ -121,10 +121,10 @@ class TestLibGen(TestCase):
                 </td>
             </tr>
             </body></html>"""
-        html = HTML(html=doc)
-        row = html.find("tr", first=True)
+        soup = BeautifulSoup(doc, "html.parser")
+        row = soup.select_one("tr")
 
-        result = libgen.parse_result_row(row)
+        result = libgen.parse_result_row(row, base_url="http://base.url")
 
         assert result.authors == "Author McAuthor"
         assert result.title == "Some Title"
@@ -134,7 +134,7 @@ class TestLibGen(TestCase):
         assert result.language == "English"
         assert result.size == "1 MB"
         assert result.extension == "epub"
-        assert result.mirrors == [
-            "http://first.mirror.lol/main/md5",
+        assert result.mirrors == {
+            "http://first.mirror/main/md5",
             "http://second.mirror/ads.php?md5=md5",
-        ]
+        }
