@@ -108,7 +108,7 @@ def get_extra(details_url: str, timeout: int = None) -> LibGenBookExtra:
 
         base_url = extract_base_url(details_url)
         cover_path = response.select_one("table img").attrs["src"]
-        cover_url = f"{base_url}/{cover_path}"
+        cover_url = f"{base_url}{cover_path}"
 
         download_page_url = response.select_one("a", string="this mirror").attrs["href"]
         download_page_response = get_soup(download_page_url)

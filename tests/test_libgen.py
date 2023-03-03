@@ -3,10 +3,13 @@ from responses import matchers
 from unittest import TestCase
 from unittest.mock import patch
 from bs4 import BeautifulSoup
+from pathlib import Path
 import logging
 import calibre_libgen_store.libgen as libgen
 
 logging.disable(logging.CRITICAL)
+
+DATA_DIR = Path(__file__).parent / Path(__file__).stem
 
 
 class TestLibGen(TestCase):
@@ -141,3 +144,16 @@ class TestLibGen(TestCase):
             "http://first.mirror/main/md5",
             "http://second.mirror/ads.php?md5=md5",
         }
+
+    @responses.activate
+    def test_get_extra(self):
+        with open(DATA_DIR / "details-page.html") as f:
+            responses.get("http://details.page", body=f.read())
+
+        with open(DATA_DIR / "download-page.html") as f:
+            responses.get("http://first.mirror/main/md5", body=f.read())
+
+        extra = libgen.get_extra("http://details.page")
+
+        assert extra.cover_url == "http://details.page/covers/cover.jpg"
+        assert extra.download_url == "http://10.0.0.1/main/728000/md5/Some%20Title.epub"
