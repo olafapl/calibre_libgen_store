@@ -2,7 +2,7 @@ import subprocess
 
 
 def test():
-    subprocess.run(["python", "-u", "-m", "unittest", "discover"])
+    subprocess.run(["python", "-u", "-m", "unittest", "discover", "-s", "./tests"])
 
 
 def download_calibre_src():

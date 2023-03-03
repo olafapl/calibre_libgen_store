@@ -3,7 +3,10 @@ from responses import matchers
 from unittest import TestCase
 from unittest.mock import patch
 from bs4 import BeautifulSoup
+import logging
 import calibre_libgen_store.libgen as libgen
+
+logging.disable(logging.CRITICAL)
 
 
 class TestLibGen(TestCase):
