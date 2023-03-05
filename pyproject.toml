@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "calibre-libgen-store"
-version = "0.1.1"
+version = "0.1.2"
 description = ""
 authors = ["Olaf Apelseth Liadal"]
 readme = "README.md"
