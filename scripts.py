@@ -7,3 +7,7 @@ def test():
 
 def download_calibre_src():
     subprocess.run(["./scripts/download-calibre-src.sh"])
+
+
+def create_release():
+    subprocess.run(["./scripts/create-release.sh"])
