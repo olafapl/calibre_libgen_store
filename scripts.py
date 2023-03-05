@@ -6,4 +6,4 @@ def test():
 
 
 def download_calibre_src():
-    subprocess.run(["sh", "./download-calibre-src.sh"])
+    subprocess.run(["./scripts/download-calibre-src.sh"])

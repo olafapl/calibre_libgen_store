@@ -1,4 +1,4 @@
-#! /usr/bin/env/sh
+#! /usr/bin/env sh
 
 mkdir -p .cache
 git clone https://github.com/kovidgoyal/calibre.git .cache/calibre
