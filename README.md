@@ -2,9 +2,9 @@
 
 ## Installation
 
-1. Download  [the latest release](/releases/latest).
+1. Download the plugin ZIP file (`calibre_libgen_store-*.zip`) from [the latest release](https://github.com/olafapl/calibre_libgen_store/releases/latest).
 1. Open Calibre and navigate to "Preferences" > "Advanced" > "Plugins", click "Load plugin from
-   file", and select the ZIP file downloaded in the previous step.
+   file", and select the file downloaded in the previous step.
 
 ## Development
 
