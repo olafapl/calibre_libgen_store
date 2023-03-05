@@ -3,8 +3,8 @@ from requests.exceptions import HTTPError
 from bs4 import BeautifulSoup, Tag
 from dataclasses import dataclass
 from typing import List, Set
-from calibre_libgen_store.util import extract_base_url
-from calibre_libgen_store.log import logger
+from .util import extract_base_url
+from .log import logger
 
 
 MIRRORS = ["https://libgen.rs", "https://libgen.is", "https://libgen.st"]
@@ -110,7 +110,7 @@ def get_extra(details_url: str, timeout: int = None) -> LibGenBookExtra:
         cover_path = response.select_one("table img").attrs["src"]
         cover_url = f"{base_url}{cover_path}"
 
-        download_page_url = response.select_one("a", string="this mirror").attrs["href"]
+        download_page_url = response.select_one("a[title='this mirror']").attrs["href"]
         download_page_response = get_soup(download_page_url)
         download_url = download_page_response.select_one("a", string="GET").attrs[
             "href"
@@ -118,5 +118,5 @@ def get_extra(details_url: str, timeout: int = None) -> LibGenBookExtra:
 
         return LibGenBookExtra(cover_url=cover_url, download_url=download_url)
     except Exception:
-        logger.exception("Failed to get details from %s.", details_url)
+        logger.exception("Failed to get extra from %s.", details_url)
         raise
