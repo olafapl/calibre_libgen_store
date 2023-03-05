@@ -85,55 +85,16 @@ class TestLibGen(TestCase):
         assert second_mirror_response.call_count == 1
 
     def test_parse_result_row(self):
-        doc = """<html><body>
-            <tr valign="top" bgcolor="#C6DEFF">
-                <td>123456</td>
-                <td>
-                    <a href="search.php?req=query&amp;column[]=author">
-                        Author McAuthor
-                    </a>
-                </td>
-                <td width="500">
-                    <a href="book/index.php?md5=md5" title="" id="123456">
-                        Some Title
-                        <font face="Times" color="green">
-                            <i>[1&nbsp;ed.]</i>
-                        </font><br>
-                        <font face="Times" color="green"><i>ISBN1, ISBN2</i></font>
-                    </a>
-                </td>
-                <td>Publisher</td>
-                <td nowrap="">2000</td>
-                <td>42</td>
-                <td>English</td>
-                <td nowrap="">1 Mb</td>
-                <td nowrap="">epub</td>
-                <td>
-                    <a href="http://first.mirror/main/md5" title="this mirror">
-                        [1]
-                    </a>
-                </td>
-                <td>
-                    <a href="http://second.mirror/ads.php?md5=md5" title="other.mirror">
-                        [2]
-                    </a>
-                </td>
-                <td>
-                    <a
-                        href="http://first.mirror/main/edit/md5"
-                        title="Libgen Librarian">
-                        [edit]
-                    </a>
-                </td>
-            </tr>
-            </body></html>"""
-        soup = BeautifulSoup(doc, "html.parser")
+        with open(DATA_DIR / "search-result-row.html") as f:
+            soup = BeautifulSoup(f.read(), "html.parser")
+
         row = soup.select_one("tr")
 
-        result = libgen.parse_result_row(row, base_url="http://base.url")
+        result = libgen.parse_result_row(row, base_url="https://libgen.is")
 
         assert result.authors == "Author McAuthor"
         assert result.title == "Some Title"
+        assert result.details_url == "https://libgen.is/book/index.php?md5=md5"
         assert result.publisher == "Publisher"
         assert result.year == "2000"
         assert result.pages == "42"
@@ -141,19 +102,21 @@ class TestLibGen(TestCase):
         assert result.size == "1 MB"
         assert result.extension == "epub"
         assert result.mirrors == {
-            "http://first.mirror/main/md5",
-            "http://second.mirror/ads.php?md5=md5",
+            "http://library.lol/main/md5",
+            "http://libgen.lc/ads.php?md5=md5",
         }
 
     @responses.activate
     def test_get_extra(self):
         with open(DATA_DIR / "details-page.html") as f:
-            responses.get("http://details.page", body=f.read())
+            responses.get("https://libgen.is/book/index.php?md5=md5", body=f.read())
 
         with open(DATA_DIR / "download-page.html") as f:
-            responses.get("http://first.mirror/main/md5", body=f.read())
+            responses.get("http://library.lol/main/md5", body=f.read())
 
-        extra = libgen.get_extra("http://details.page")
+        extra = libgen.get_extra("https://libgen.is/book/index.php?md5=md5")
 
-        assert extra.cover_url == "http://details.page/covers/cover.jpg"
-        assert extra.download_url == "http://10.0.0.1/main/728000/md5/Some%20Title.epub"
+        assert extra.cover_url == "https://libgen.is/covers/534000/md5-d.jpg"
+        assert (
+            extra.download_url == "http://10.0.0.1/main/534000/md5/Some%20Title%.epub"
+        )

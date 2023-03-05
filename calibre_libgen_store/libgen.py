@@ -1,8 +1,10 @@
 import requests
 from requests.exceptions import HTTPError
 from bs4 import BeautifulSoup, Tag
+from bs4.element import NavigableString
 from dataclasses import dataclass
 from typing import List, Set
+from string import punctuation, whitespace
 from .util import extract_base_url
 from .log import logger
 
@@ -76,9 +78,10 @@ def search(query: str, max_results=50, timeout: int = None) -> List[LibGenBook]:
 
 def parse_result_row(result: Tag, base_url: str) -> LibGenBook:
     cols = result.select("td")
+    title = next(c for c in cols[2].select_one("a") if isinstance(c, NavigableString))
     return LibGenBook(
         authors=cols[1].text.strip(),
-        title=cols[2].select_one("a").text.strip().split("\n")[0],
+        title=title.strip(punctuation + whitespace),
         details_url=f"{base_url}/{cols[2].select_one('a').attrs['href']}",
         publisher=cols[3].text.strip(),
         year=cols[4].text.strip(),
